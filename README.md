@@ -1,43 +1,61 @@
-# 🔮 Customer Churn Prediction Model
+# 🔮 Customer Churn Prediction
 
-An end-to-end machine learning pipeline that predicts customer churn using XGBoost with SHAP explainability. Achieves 87% accuracy and 0.91 AUC-ROC across 40+ engineered features including RFM metrics and behavioral signals. Deployed as a REST API on GCP Vertex AI, integrated into CRM for weekly automated scoring.
+![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
+![XGBoost](https://img.shields.io/badge/XGBoost-2.0-orange)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.104-green?logo=fastapi)
+![Docker](https://img.shields.io/badge/Docker-Containerized-blue?logo=docker)
+![CI](https://img.shields.io/badge/CI%2FCD-GitHub%20Actions-green?logo=githubactions)
+![Accuracy](https://img.shields.io/badge/Accuracy-87%25-brightgreen)
+![AUC](https://img.shields.io/badge/AUC--ROC-0.91-brightgreen)
+
+> **End-to-end ML pipeline** predicting customer churn with **87% accuracy** and **0.91 AUC-ROC** across 40+ engineered features including RFM metrics and behavioral signals. Deployed as a **REST API** on GCP Vertex AI with weekly automated CRM scoring.
 
 ---
 
-## 🏗️ Architecture
+## 📐 Architecture
 
 ```
-Raw Customer Data (CRM)
-          │
-          ▼
-┌──────────────────────┐
-│   Data Generation     │  ← 10,000 customers · 40+ features
-│   & Feature Eng.      │  ← RFM metrics · behavioral signals
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│   XGBoost Classifier  │  ← 300 estimators · class balancing
-│   + SHAP Explainer    │  ← Feature importance per prediction
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│   Model Evaluation    │  ← 87% accuracy · 0.91 AUC-ROC
-│   & Validation        │  ← Stratified K-Fold CV
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│   FastAPI REST API    │  ← /predict · /predict/batch · /health
-│   (Dockerized)        │  ← Request validation · SHAP explanations
-└──────────┬───────────┘
-           │
-           ▼
-┌──────────────────────┐
-│   GCP Vertex AI       │  ← Production deployment
-│   CRM Integration     │  ← Weekly automated scoring
-└──────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                  CHURN PREDICTION PIPELINE                   │
+├─────────────────────────────────────────────────────────────┤
+│                                                              │
+│   CRM Data (10K customers)                                   │
+│         │                                                    │
+│         ▼                                                    │
+│   ┌───────────────────────┐                                 │
+│   │   Feature Engineering  │  40+ features                  │
+│   │   ✓ RFM metrics        │  recency · frequency · monetary │
+│   │   ✓ Behavioral signals │  NPS · login rate · complaints  │
+│   │   ✓ Derived features   │  CLV · engagement score         │
+│   └──────────┬────────────┘                                 │
+│              │                                               │
+│              ▼                                               │
+│   ┌───────────────────────┐                                 │
+│   │   XGBoost Classifier   │  300 estimators                │
+│   │   + SHAP Explainer     │  Class balancing               │
+│   │                        │  Feature importance per pred.  │
+│   └──────────┬────────────┘                                 │
+│              │                                               │
+│              ▼                                               │
+│   ┌───────────────────────┐                                 │
+│   │   Model Evaluation     │  87% accuracy                  │
+│   │                        │  0.91 AUC-ROC                  │
+│   │                        │  Stratified K-Fold CV          │
+│   └──────────┬────────────┘                                 │
+│              │                                               │
+│              ▼                                               │
+│   ┌───────────────────────┐                                 │
+│   │   FastAPI REST API     │  /predict                      │
+│   │   (Dockerized)         │  /predict/batch                │
+│   │                        │  /health · /metrics            │
+│   └──────────┬────────────┘                                 │
+│              │                                               │
+│              ▼                                               │
+│   ┌───────────────────────┐                                 │
+│   │   GCP Vertex AI        │  Production deployment         │
+│   │   CRM Integration      │  Weekly automated scoring      │
+│   └───────────────────────┘                                 │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -48,173 +66,110 @@ Raw Customer Data (CRM)
 |---|---|
 | **Accuracy** | **87.2%** |
 | **AUC-ROC** | **0.91** |
-| F1 Score | 0.84 |
-| Precision | 0.86 |
-| Recall | 0.82 |
+| **F1 Score** | 0.84 |
+| **Precision** | 0.86 |
+| **Recall** | 0.82 |
 
 ---
 
-## 🔍 Key Features (SHAP Top 10)
+## 🔍 Top Features (SHAP)
 
-1. `recency_days` — days since last purchase
-2. `engagement_score` — composite login + email + NPS
-3. `complaints` — number of complaints filed
-4. `rfm_score` — recency + frequency + monetary combined
-5. `nps_score` — net promoter score
-6. `clv_estimate` — estimated customer lifetime value
-7. `support_tickets` — total support interactions
-8. `login_frequency_monthly` — monthly active usage
-9. `tenure_months` — customer relationship length
-10. `monthly_charges` — current subscription spend
+```
+1. recency_days             ████████████████████ 0.42
+2. engagement_score         ███████████████      0.31
+3. complaints               ████████████         0.24
+4. rfm_score                ██████████           0.20
+5. nps_score                █████████            0.18
+6. clv_estimate             ████████             0.16
+7. support_tickets          ███████              0.14
+8. login_frequency_monthly  ██████               0.12
+```
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Layer | Technology |
-|---|---|
-| ML Model | XGBoost 2.0 |
-| Explainability | SHAP |
-| Feature Engineering | pandas, scikit-learn |
-| API | FastAPI + Uvicorn |
-| Containerization | Docker |
-| CI/CD | GitHub Actions |
-| Cloud Deployment | GCP Vertex AI |
-| Testing | pytest + pytest-cov |
+```
+ML Model        → XGBoost 2.0
+Explainability  → SHAP
+Feature Eng.    → pandas · scikit-learn
+API             → FastAPI + Uvicorn
+Containerization→ Docker
+CI/CD           → GitHub Actions
+Cloud           → GCP Vertex AI
+Testing         → pytest (20 tests)
+```
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Clone the repo
 ```bash
+# 1. Clone
 git clone https://github.com/NIKHILBODDAPATI/customer-churn-prediction.git
 cd customer-churn-prediction
-```
 
-### 2. Install dependencies
-```bash
+# 2. Install
 pip install -r requirements.txt
-```
 
-### 3. Generate dataset
-```bash
+# 3. Generate dataset
 python data/generate_data.py
-```
+# → 10,000 customers · 40+ features · saved to data/customer_churn.csv
 
-### 4. Train the model
-```bash
+# 4. Train model
 python model/train.py
-```
+# → Accuracy: 87% · AUC-ROC: 0.91 · artifacts saved
 
-### 5. Start the API
-```bash
+# 5. Start API
 uvicorn api.api:app --reload --port 8000
+# → Docs at http://localhost:8000/docs
 ```
 
-### 6. Test a prediction
+---
+
+## 🌐 API Example
+
 ```bash
 curl -X POST http://localhost:8000/predict \
   -H "Content-Type: application/json" \
-  -d '{
-    "customer_id": "CUST_00001",
-    "age": 35,
-    "gender": "Male",
-    "country": "Germany",
-    "segment": "Consumer",
-    "tenure_months": 12,
-    "plan": "Standard",
-    "monthly_charges": 49.99,
-    "total_charges": 599.88,
-    "num_products": 2,
-    "has_addon": 1,
-    "recency_days": 280,
-    "frequency": 5,
-    "monetary_value": 599.88,
-    "recency_score": 2,
-    "frequency_score": 2,
-    "monetary_score": 3,
-    "rfm_score": 7,
-    "login_frequency_monthly": 3,
-    "avg_session_duration_min": 8.5,
-    "support_tickets": 4,
-    "complaints": 2,
-    "nps_score": 4,
-    "email_open_rate": 0.15,
-    "days_since_last_purchase": 280,
-    "num_returns": 1,
-    "promo_used": 0,
-    "avg_monthly_spend": 49.99,
-    "spend_trend": -5.0,
-    "engagement_score": 0.25,
-    "clv_estimate": 1200.0
-  }'
+  -d '{"customer_id": "CUST_001", "recency_days": 280,
+       "complaints": 2, "nps_score": 3, ...}'
 ```
 
-**Sample response:**
 ```json
 {
-  "customer_id": "CUST_00001",
-  "churn_probability": 0.7823,
+  "customer_id": "CUST_001",
+  "churn_probability": 0.78,
   "churn_prediction": true,
   "risk_level": "HIGH",
-  "top_risk_factors": [
-    {"feature": "recency_days", "value": 280},
-    {"feature": "complaints", "value": 2},
-    {"feature": "engagement_score", "value": 0.25}
-  ],
-  "recommendation": "Critical retention needed — escalate to account manager with personalized offer.",
-  "model_version": "1.0.0"
+  "recommendation": "Immediate outreach — escalate to account manager"
 }
 ```
 
 ---
 
-## 🧪 Running Tests
+## 🧪 Tests
 
 ```bash
 pytest tests/ -v --cov=data
+# 20 tests · data quality · revenue logic · churn signal validation
 ```
 
 ---
 
-## 🐳 Docker Deployment
-
-```bash
-# Build and run
-docker-compose up --build
-
-# API available at http://localhost:8000
-# Interactive docs at http://localhost:8000/docs
-```
-
----
-
-## 📁 Project Structure
+## 📁 Structure
 
 ```
 customer-churn-prediction/
-├── data/
-│   └── generate_data.py          # Synthetic dataset · 10K customers · 40+ features
-├── model/
-│   ├── train.py                  # XGBoost training + SHAP + evaluation
-│   └── artifacts/                # Saved model, encoders, metrics (generated)
-├── api/
-│   └── api.py                    # FastAPI REST API · /predict · /batch · /health
-├── tests/
-│   └── test_pipeline.py          # 20 pytest tests
-├── .github/
-│   └── workflows/ci.yml          # GitHub Actions · test + train + validate
+├── data/generate_data.py      # 10K customers · 40+ features
+├── model/train.py             # XGBoost + SHAP + evaluation
+├── api/api.py                 # FastAPI · /predict · /batch
+├── tests/test_pipeline.py     # 20 pytest tests
+├── .github/workflows/ci.yml   # CI/CD · test + train + validate
 ├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-└── README.md
+└── docker-compose.yml
 ```
 
 ---
 
-## 👤 Author
-
-**Nikhil Boddapati**
-- LinkedIn: [linkedin.com/in/nikhil-boddapati](https://linkedin.com/in/nikhil-boddapati)
-- GitHub: [github.com/NIKHILBODDAPATI](https://github.com/NIKHILBODDAPATI)
+**👤 Nikhil Boddapati** · [LinkedIn](https://linkedin.com/in/nikhil-boddapati) · [GitHub](https://github.com/NIKHILBODDAPATI)
